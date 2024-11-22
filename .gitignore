@@ -1,0 +1,6 @@
+packer/output-input_rhel_box_source/
+*ruby-lsp*
+*.log
+kubeadm_join_cmd.sh
+.vagrant/
+packer/Vagrantfile.template
