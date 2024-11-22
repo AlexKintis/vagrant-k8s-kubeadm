@@ -9,6 +9,7 @@ Before you get started, ensure that you have the following installed on your sys
 1. **Vagrant**: [Download and install Vagrant](https://www.vagrantup.com/downloads).
 2. **VirtualBox**: [Download and install VirtualBox](https://www.virtualbox.org/wiki/Downloads).
 3. **Packer**: This project uses a base box created by Packer. Ensure that the `BASE_BOX` defined in the `Vagrantfile` is correctly built before proceeding.
+4. **Editor**: You can use any text editor of your choice to modify the configuration files.
 
 ## Project Structure
 
