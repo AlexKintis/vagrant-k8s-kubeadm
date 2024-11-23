@@ -34,7 +34,7 @@ KUBELET_EXTRA_ARGS=--node-ip=$local_ip
 EOF
 
       # Initialize the Kubernetes cluster with kubeadm
-      kubeadm init --pod-network-cidr=192.168.0.0/16 | tee /tmp/kubeadm-init.out
+      kubeadm init --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address=$local_ip | tee /tmp/kubeadm-init.out
 
       # Set up the kubeconfig file for the current user
       mkdir -p $HOME/.kube
