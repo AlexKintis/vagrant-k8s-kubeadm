@@ -33,10 +33,11 @@ Before you get started, ensure that you have the following installed on your sys
    Before running Vagrant, you need to create the base box using Packer. This box is used to provision the master and worker nodes:
 
    ```bash
-   packer build <packer-template-file>
+   cd packer
+   packer build rhel-k8s-kubeadm.pkr.hcl
    ```
 
-   Ensure that the output box file path matches the value defined in `BASE_BOX` inside the `Vagrantfile`.
+   Ensure that the output box file path matches the value defined in `BASE_BOX` inside the `Vagrantfile` (eg. `packer/output-input_rhel_box_source/package.box`).
 
 3. **Start the Cluster**
 
@@ -50,6 +51,7 @@ Before you get started, ensure that you have the following installed on your sys
 
    - **k8s-master**: Kubernetes master node that initializes the cluster.
    - **k8s-worker-1** and **k8s-worker-2**: Worker nodes that will join the Kubernetes cluster.
+   - Apply the nginx-deployment.yaml to all nodes throught the master node.
 
    The process includes installing all required packages, initializing the Kubernetes master, and configuring worker nodes to join the cluster.
 
@@ -59,10 +61,81 @@ Before you get started, ensure that you have the following installed on your sys
 
    ```bash
    vagrant ssh k8s-master
-   kubectl get nodes
+   sudo kubectl get nodes
    ```
 
    You should see the master and both worker nodes in a `Ready` state.
+
+   Validate Kubernetes Deployment
+
+   ```sh
+   # Step 1: Check the Status of the Deployment
+   sudo kubectl get deployments
+   ```
+
+   **Expected Output**:
+
+   ```
+   NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+   nginx-deployment   3/3     3            3           1m
+   ```
+
+   ```sh
+   # Step 2: Check the Pods Status
+   sudo kubectl get pods
+   ```
+
+   **Expected Output**:
+
+   ```
+   NAME                                READY   STATUS    RESTARTS   AGE
+   nginx-deployment-xxxxx-yyyyy        1/1     Running   0          1m
+   nginx-deployment-xxxxx-zzzzz        1/1     Running   0          1m
+   nginx-deployment-xxxxx-aaaaa        1/1     Running   0          1m
+   ```
+
+   ```sh
+   # Step 3: Describe the Deployment (Optional)
+   sudo kubectl describe deployment nginx-deployment
+   ```
+
+   **Expected Output**: Contains no warnings or errors in the `Events` section.
+
+   ```sh
+   # Step 4: Check the Service
+   kubectl get services
+   ```
+
+   **Expected Output**:
+
+   ```
+    NAME            TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)        AGE
+    kubernetes      ClusterIP   10.96.0.1     <none>        443/TCP        1m
+    nginx-service   NodePort    10.96.53.57   <none>        80:30001/TCP   1m
+   ```
+
+   ```sh
+   # Step 5: Verify the Deployment Rollout Status
+   sudo kubectl rollout status deployment/nginx-deployment
+   ```
+
+   **Expected Output**:
+
+   ```
+   deployment "nginx-deployment" successfully rolled out
+   ```
+
+5. **Access the Nginx deployment**
+
+    Use the browser to access the Nginx deployment through the worker and master nodes:
+
+    ```
+    http://192.168.56.10:30001/
+    http://192.168.56.11:30001/
+    http://192.168.56.12:30001/
+    ```
+
+    You should see the Nginx welcome page in all of the above URLs.
 
 ## Node Configuration Details
 
@@ -98,12 +171,12 @@ The cluster uses a **private network** configuration, with IP addresses assigned
 3. **Calico Pod Network**:
    - After initializing the master node, Calico is applied as the pod network using `kubectl apply` to ensure that the nodes can communicate with each other.
 
-## Common Commands
+## Vagrant Common Commands
 
 - **SSH into a Node**:
 
   ```bash
-  vagrant ssh <node-name>
+  vagrant ssh [ k8s-master, k8s-worker-1, k8s-worker-2 ]
   ```
 
   Example:
@@ -147,6 +220,6 @@ The cluster uses a **private network** configuration, with IP addresses assigned
 
 ## Notes
 
-- This setup is intended for development and testing purposes only. It is not suitable for production environments.
+- This setup is intended as an example, development and testing purposes only. It is not suitable for production environments.
 - You can modify the memory and CPU allocations in the `Vagrantfile` to suit your hardware.
 - Make sure your system supports virtualization and has enough resources to allocate to the VMs.
