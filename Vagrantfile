@@ -59,6 +59,13 @@ EOF
       kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/refs/heads/master/manifests/calico.yaml
     SHELL
 
+    # Apply Nginx Deployment after all nodes are initialized
+    master.vm.provision "apply_nginx", type: "shell", 
+      privileged: true,
+      inline: <<-SHELL
+      kubectl apply -f /vagrant/nginx-deployment.yaml
+    SHELL
+
   end
 
   # Worker Node 1 Configuration
